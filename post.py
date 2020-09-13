@@ -37,6 +37,9 @@ class ExpToolkit:
         except:
             raise ValueError("Bad data structure, no `.data._id` field.")
 
+    def resume_experiment(self, exp_id):
+        self.exp_id = exp_id
+
     def submit(self, data):
         url = f"{self.host}/exp/submit/{self.exp_id}"
         r = requests.post(url, data=json.dumps(data), headers=self.headers)
@@ -46,7 +49,17 @@ class ExpToolkit:
 if __name__ == "__main__":
     noob = ExpToolkit()
     noob.set_host("http://localhost:5050/")
-    noob.set_project("5f5b1f5d5094d2148a4a3c65")
+    noob.set_project("5f5e081786656163f7a6b7fb")
 
-    noob.register_experiment()
-    noob.submit({"key": "231313", "value": "q23434324"})
+    # noob.register_experiment()
+    noob.resume_experiment("5f5e083a86656163f7a6b801")
+    print(noob.exp_id)
+
+    data = {
+        "status": "gpu0",
+        "progress": "FIN",
+        "mrr_5": "0.1232",
+        "mrr_20": "0.1679",
+        "loss": "5.6662",
+    }
+    noob.submit(data)
