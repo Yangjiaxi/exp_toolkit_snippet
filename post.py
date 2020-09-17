@@ -6,6 +6,8 @@ Or say not started yet :(
 import requests
 import json
 
+import random
+
 
 class ExpToolkit:
     def __init__(self):
@@ -46,20 +48,37 @@ class ExpToolkit:
         print(r.text)
 
 
+def gen_data(gpu, epoch, end=None):
+    if end is None:
+        end = epoch
+    for idx in range(1, end + 1):
+        data = {
+            "status": f"gpu{gpu}" if idx < epoch else "FIN",
+            "progress": f"{idx}/{epoch}",
+            "mrr_5": "{:.4f}".format(0.1234 + idx * 0.001 + (random.random() - 0.5) * 0.1),
+            "mrr_20": "{:.4f}".format(0.1681 + idx * 0.001 + (random.random() - 0.5) * 0.1),
+            "loss": "{:.4f}".format(6.556 - idx * 0.001 + (random.random() - 0.5) * 0.5),
+        }
+        yield data
+
+
 if __name__ == "__main__":
     noob = ExpToolkit()
-    noob.set_host("http://localhost:5050/")
-    noob.set_project("5f5e081786656163f7a6b7fb")
+    noob.set_host("http://localhost:5050")
+    noob.set_project("5f5ebf156ee8596d1c084fb9")
 
-    # noob.register_experiment()
-    noob.resume_experiment("5f5e083a86656163f7a6b801")
+    noob.register_experiment()
+    # noob.resume_experiment("5f61d67d5571e5d5ee451e4d")
     print(noob.exp_id)
 
-    data = {
-        "status": "gpu0",
-        "progress": "FIN",
-        "mrr_5": "0.1232",
-        "mrr_20": "0.1679",
-        "loss": "5.6662",
-    }
-    noob.submit(data)
+    for d in gen_data(gpu=1, epoch=20):
+        noob.submit(d)
+
+    # data = {
+    #     "status": "gpu0",
+    #     "progress": "FIN",
+    #     "mrr_5": "0.1234",
+    #     "mrr_20": "0.1681",
+    #     "loss": "5.6660",
+    # }
+    # noob.submit(data)
