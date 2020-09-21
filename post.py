@@ -7,6 +7,7 @@ import requests
 import json
 
 import random
+import numpy as np
 
 
 class ExpToolkit:
@@ -48,37 +49,36 @@ class ExpToolkit:
         print(r.text)
 
 
+def sigmoid(x):
+    return 1.0 / (1 + np.exp(-x))
+
+
 def gen_data(gpu, epoch, end=None):
     if end is None:
         end = epoch
-    for idx in range(1, end + 1):
+
+    x = np.linspace(0, 5, epoch) + np.abs(np.random.randn((epoch))) * 0.3
+    data = sigmoid(x)
+    for idx, d in zip(range(1, end + 1), data):
         data = {
             "status": f"gpu{gpu}" if idx < epoch else "FIN",
             "progress": f"{idx}/{epoch}",
-            "mrr_5": "{:.4f}".format(0.1234 + idx * 0.001 + (random.random() - 0.5) * 0.1),
-            "mrr_20": "{:.4f}".format(0.1681 + idx * 0.001 + (random.random() - 0.5) * 0.1),
-            "loss": "{:.4f}".format(6.556 - idx * 0.001 + (random.random() - 0.5) * 0.5),
+            "acc": "{:.4f}".format(d),
+            "loss": "{:.4f}".format((1 - d) * 10),
         }
         yield data
 
 
 if __name__ == "__main__":
     noob = ExpToolkit()
-    noob.set_host("http://localhost:5050")
-    noob.set_project("5f5ebf156ee8596d1c084fb9")
+    noob.set_host("https://api-exp.jojo.fit")
+    noob.set_project("5f683f2236c3222183c809ba")
 
     noob.register_experiment()
-    # noob.resume_experiment("5f61d67d5571e5d5ee451e4d")
+    # noob.resume_experiment("5f644a4bc677b91d32d25943")
     print(noob.exp_id)
 
-    for d in gen_data(gpu=1, epoch=20):
+    for d in gen_data(gpu=2, epoch=50):
+        # print(d)
         noob.submit(d)
 
-    # data = {
-    #     "status": "gpu0",
-    #     "progress": "FIN",
-    #     "mrr_5": "0.1234",
-    #     "mrr_20": "0.1681",
-    #     "loss": "5.6660",
-    # }
-    # noob.submit(data)
